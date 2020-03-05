@@ -46,6 +46,87 @@ namespace EFBanco.Controllers
             }
             return View(await applicationDbContext.ToListAsync());
         }
+        public async Task<IActionResult> IndexV2(double? balance, string nombre, string rad)
+        {
+            var applicationDbContext = _context.Cliente.Include(c => c.Sucursal).ThenInclude(c => c.Banco);
+            //Si mayor o menor
+            if (rad=="menor")
+            {
+
+                if (balance == null && string.IsNullOrEmpty(nombre))
+                {
+                    applicationDbContext = _context.Cliente.Include(c => c.Sucursal).ThenInclude(c => c.Banco);
+                }
+                else if (balance != null && !string.IsNullOrEmpty(nombre))
+                {
+
+                    applicationDbContext = _context.Cliente.Where(cliente => cliente.Nombre.ToLower() == nombre.ToLower() && Convert.ToDouble(cliente.Balance) < balance).Include(c => c.Sucursal).ThenInclude(c => c.Banco);
+                }
+                else if (string.IsNullOrEmpty(nombre) && balance != null)
+                {
+                    applicationDbContext = _context.Cliente.Where(cliente => Convert.ToDouble(cliente.Balance) < balance).Include(c => c.Sucursal).ThenInclude(c => c.Banco);
+                }
+                else if (!string.IsNullOrEmpty(nombre) && balance == null)
+                {
+                    applicationDbContext = _context.Cliente.Where(cliente => cliente.Nombre.ToLower() == nombre.ToLower()).Include(c => c.Sucursal).ThenInclude(c => c.Banco);
+                }
+                else
+                {
+                    applicationDbContext = _context.Cliente.Include(c => c.Sucursal).ThenInclude(c => c.Banco);
+                }
+            }
+            else if(rad == "mayor")
+            {
+                if (balance == null && string.IsNullOrEmpty(nombre))
+                {
+                    applicationDbContext = _context.Cliente.Include(c => c.Sucursal).ThenInclude(c => c.Banco);
+                }
+                else if (balance != null && !string.IsNullOrEmpty(nombre))
+                {
+
+                    applicationDbContext = _context.Cliente.Where(cliente => cliente.Nombre.ToLower() == nombre.ToLower() && Convert.ToDouble(cliente.Balance) >= balance).Include(c => c.Sucursal).ThenInclude(c => c.Banco);
+                }
+                else if (string.IsNullOrEmpty(nombre) && balance != null)
+                {
+                    applicationDbContext = _context.Cliente.Where(cliente => Convert.ToDouble(cliente.Balance) >= balance).Include(c => c.Sucursal).ThenInclude(c => c.Banco);
+                }
+                else if (!string.IsNullOrEmpty(nombre) && balance == null)
+                {
+                    applicationDbContext = _context.Cliente.Where(cliente => cliente.Nombre.ToLower() == nombre.ToLower()).Include(c => c.Sucursal).ThenInclude(c => c.Banco);
+                }
+                else
+                {
+                    applicationDbContext = _context.Cliente.Include(c => c.Sucursal).ThenInclude(c => c.Banco);
+                }
+
+            }
+            else
+            {
+                if (balance == null && string.IsNullOrEmpty(nombre))
+                {
+                    applicationDbContext = _context.Cliente.Include(c => c.Sucursal).ThenInclude(c => c.Banco);
+                }
+                else if (balance != null && !string.IsNullOrEmpty(nombre))
+                {
+
+                    applicationDbContext = _context.Cliente.Where(cliente => cliente.Nombre.ToLower() == nombre.ToLower() && Convert.ToDouble(cliente.Balance) == balance).Include(c => c.Sucursal).ThenInclude(c => c.Banco);
+                }
+                else if (string.IsNullOrEmpty(nombre) && balance != null)
+                {
+                    applicationDbContext = _context.Cliente.Where(cliente => Convert.ToDouble(cliente.Balance) == balance).Include(c => c.Sucursal).ThenInclude(c => c.Banco);
+                }
+                else if (!string.IsNullOrEmpty(nombre) && balance == null)
+                {
+                    applicationDbContext = _context.Cliente.Where(cliente => cliente.Nombre.ToLower() == nombre.ToLower()).Include(c => c.Sucursal).ThenInclude(c => c.Banco);
+                }
+                else
+                {
+                    applicationDbContext = _context.Cliente.Include(c => c.Sucursal).ThenInclude(c => c.Banco);
+                }
+            }
+            //Carga inicial
+            return View(await applicationDbContext.ToListAsync());
+        }
 
         // GET: Clientes/Details/5
         public async Task<IActionResult> Details(int? id)
@@ -104,7 +185,9 @@ namespace EFBanco.Controllers
             {
                 return NotFound();
             }
-            ViewData["SucursalId"] = new SelectList(_context.Sucursal, "Id", "Direccion", cliente.SucursalId);
+            ViewData["Nombre"] = new SelectList(_context.Cliente, "Id", "Nombre", cliente.Nombre);
+            ViewData["Apellido"] = new SelectList(_context.Cliente, "Id", "Apellido", cliente.Apellido);
+            ViewData["Iban"] = new SelectList(_context.Cliente, "Id", "Iban", cliente.Iban);
             return View(cliente);
         }
 
@@ -113,7 +196,7 @@ namespace EFBanco.Controllers
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> SacarDinero(int id, [Bind("Id,Nombre,Apellido,Iban,Balance,SucursalId")] Cliente cliente)
+        public async Task<IActionResult> SacarDinero(int id, [Bind("Id,Nombre,Apellido,Iban,Balance,SucursalId")] Cliente cliente, string degreso)
         {
             if (id != cliente.Id)
             {
@@ -122,6 +205,7 @@ namespace EFBanco.Controllers
 
             if (ModelState.IsValid)
             {
+                cliente.Balance -= Convert.ToDouble(degreso);
                 try
                 {
                     _context.Update(cliente);
@@ -156,7 +240,10 @@ namespace EFBanco.Controllers
             {
                 return NotFound();
             }
-            ViewData["SucursalId"] = new SelectList(_context.Sucursal, "Id", "Direccion", cliente.SucursalId);
+            //ViewData["SucursalId"] = new SelectList(_context.Sucursal, "Id", "Direccion", cliente.SucursalId);
+            ViewData["Nombre"] = new SelectList(_context.Cliente, "Id", "Nombre", cliente.Nombre);
+            ViewData["Apellido"] = new SelectList(_context.Cliente, "Id", "Apellido", cliente.Apellido);
+            ViewData["Iban"] = new SelectList(_context.Cliente, "Id", "Iban", cliente.Iban);
             return View(cliente);
         }
 
@@ -165,7 +252,7 @@ namespace EFBanco.Controllers
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> IntroducirDinero(int id, [Bind("Id,Nombre,Apellido,Iban,Balance,SucursalId")] Cliente cliente)
+        public async Task<IActionResult> IntroducirDinero(int id, [Bind("Id,Nombre,Apellido,Iban,Balance,SucursalId")] Cliente cliente, string ingreso)
         {
             if (id != cliente.Id)
             {
@@ -174,6 +261,7 @@ namespace EFBanco.Controllers
 
             if (ModelState.IsValid)
             {
+                cliente.Balance += Convert.ToDouble(ingreso);
                 try
                 {
                     _context.Update(cliente);
@@ -192,6 +280,7 @@ namespace EFBanco.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
+            //ViewData["SucursalId"] = new SelectList(_context.Sucursal, "Id", "Direccion", cliente.SucursalId);
             ViewData["SucursalId"] = new SelectList(_context.Sucursal, "Id", "Direccion", cliente.SucursalId);
             return View(cliente);
         }
