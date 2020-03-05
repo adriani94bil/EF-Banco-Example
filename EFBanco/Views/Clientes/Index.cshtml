@@ -1,0 +1,69 @@
+﻿@model IEnumerable<EFBanco.Models.Cliente>
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h1>Index</h1>
+
+<p>
+    <a asp-action="Create">Create New</a>
+</p>
+<form asp-controller="Clientes" asp-action="Index">
+    <input type="text" name="nombre" placeholder="Cliente"/>
+    <input type="text" name="balance" placeholder="Balance"/>
+    <button type="submit">Enviar</button>
+</form>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.Nombre)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Apellido)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Iban)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Balance)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Sucursal.Direccion)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Sucursal.Banco.Nombre)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.Nombre)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Apellido)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Iban)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Balance)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Sucursal.Direccion)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Sucursal.Banco.Nombre)
+            </td>
+            <td>
+                <a asp-action="IntroducirDinero" asp-route-id="@item.Id">Ingreso</a> |
+                <a asp-action="SacarDinero" asp-route-id="@item.Id">SExtraer</a> |
+            </td>
+        </tr>
+}
+    </tbody>
+</table>
